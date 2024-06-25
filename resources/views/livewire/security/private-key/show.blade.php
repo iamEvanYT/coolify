@@ -1,7 +1,7 @@
 <div x-init="$wire.loadPublicKey()">
     <x-security.navbar />
     <div x-data="{ showPrivateKey: false }">
-        <form class="flex flex-col gap-2" wire:submit='changePrivateKey'>
+        <form class="flex flex-col gap-2" wire:submit='submit'>
             <div class="flex items-end gap-2">
                 <h2>Private Key</h2>
                 <x-forms.button type="submit">
@@ -16,6 +16,13 @@
             <x-forms.input id="private_key.name" label="Name" required />
             <x-forms.input id="private_key.description" label="Description" />
             <div>
+                @if (!isCloud())
+                    <div class="w-48">
+                        <x-forms.checkbox label="System Wide?"
+                            helper="If checked, this Private Key will be available for everyone in this Coolify instance."
+                            instantSave id="private_key.is_system_wide"/>
+                    </div>
+                @endif
                 <div class="flex items-end gap-2 py-2 ">
                     <div class="pl-1 ">Public Key</div>
                 </div>

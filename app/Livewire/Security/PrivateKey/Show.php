@@ -13,7 +13,8 @@ class Show extends Component
         'private_key.name' => 'required|string',
         'private_key.description' => 'nullable|string',
         'private_key.private_key' => 'required|string',
-        'private_key.is_git_related' => 'nullable|boolean'
+        'private_key.is_git_related' => 'nullable|boolean',
+        'private_key.is_system_wide' => 'required|boolean',
     ];
     protected $validationAttributes = [
         'private_key.name' => 'name',
@@ -24,7 +25,7 @@ class Show extends Component
     public function mount()
     {
         try {
-            $this->private_key = PrivateKey::ownedByCurrentTeam(['name', 'description', 'private_key', 'is_git_related'])->whereUuid(request()->private_key_uuid)->firstOrFail();
+            $this->private_key = PrivateKey::ownedByCurrentTeam(['name', 'description', 'private_key', 'is_git_related', 'is_system_wide'])->whereUuid(request()->private_key_uuid)->firstOrFail();
         }catch(\Throwable $e) {
             return handleError($e, $this);
         }
@@ -46,7 +47,7 @@ class Show extends Component
         }
     }
 
-    public function changePrivateKey()
+    public function submit()
     {
         try {
             $this->private_key->private_key = formatPrivateKey($this->private_key->private_key);
@@ -56,5 +57,10 @@ class Show extends Component
         } catch (\Throwable $e) {
             return handleError($e, $this);
         }
+    }
+
+    public function instantSave()
+    {
+        $this->submit();
     }
 }

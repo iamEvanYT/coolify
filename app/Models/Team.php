@@ -168,15 +168,32 @@ class Team extends Model implements SendsDiscord, SendsEmail
 
     public function privateKeys()
     {
-        return $this->hasMany(PrivateKey::class);
+        $private_keys = collect([]);
+
+        $team_private_keys = $this->hasMany(PrivateKey::class);
+        $system_wide_private_keys = PrivateKey::where('is_system_wide', true)->get();
+
+        $private_keys = $private_keys->merge($team_private_keys)->merge($system_wide_private_keys);
+        $private_keys = $private_keys->unique('id');
+
+        return $private_keys;
     }
 
     public function sources()
     {
         $sources = collect([]);
-        $github_apps = $this->hasMany(GithubApp::class)->whereisPublic(false)->get();
-        $gitlab_apps = $this->hasMany(GitlabApp::class)->whereisPublic(false)->get();
-        $sources = $sources->merge($github_apps)->merge($gitlab_apps);
+
+        $team_github_apps = $this->hasMany(GithubApp::class)->whereisPublic(false)->get();
+        $team_gitlab_apps = $this->hasMany(GitlabApp::class)->whereisPublic(false)->get();
+
+        $system_wide_github_apps = GithubApp::where('is_system_wide', true)->get();
+        $system_wide_gitlab_apps = GitlabApp::where('is_system_wide', true)->get();
+
+        $sources = $sources->merge($team_github_apps)->merge($team_gitlab_apps);
+        $sources = $sources->merge($system_wide_github_apps)->merge($system_wide_gitlab_apps);
+
+        $sources = $sources->unique('id');
+
         return $sources;
     }
 

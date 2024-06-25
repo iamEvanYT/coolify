@@ -12,12 +12,17 @@ class PrivateKey extends BaseModel
         'private_key',
         'is_git_related',
         'team_id',
+        'is_system_wide',
     ];
 
-    static public function ownedByCurrentTeam(array $select = ['*'])
+    public static function ownedByCurrentTeam(array $select = ['*'])
     {
-        $selectArray = collect($select)->concat(['id']);
-        return PrivateKey::whereTeamId(currentTeam()->id)->select($selectArray->all());
+        $selectArray = collect($select)->concat(['id', 'is_system_wide'])->unique()->all();
+
+        $teamKeys = PrivateKey::whereTeamId(currentTeam()->id)->select($selectArray);
+        $systemWideKeys = PrivateKey::where('is_system_wide', true)->select($selectArray);
+
+        return $teamKeys->union($systemWideKeys)->distinct();
     }
 
     public function publicKey()
